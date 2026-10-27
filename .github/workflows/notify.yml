@@ -1,0 +1,22 @@
+name: Room notifier
+
+on:
+  schedule:
+    # Every 15 minutes, 06:00–17:45 UTC, Monday–Friday
+    - cron: "*/15 5-19 * * 1-5"
+  workflow_dispatch: # lets you run it manually from the Actions tab
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: node index.js
+        env:
+          ICS_URL: ${{ secrets.ICS_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}

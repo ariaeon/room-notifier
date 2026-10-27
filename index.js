@@ -123,10 +123,19 @@ const events = Object.values(ical.parseICS(ics))
 
 // get a random one
 // const randomEvent = events[Math.floor(Math.random() * events.length)];
-const nextEvent = events.find((e) => e.start > currentTime);
+// Runs every 15 min; round down so a delayed run still counts as its scheduled slot
+const SLOT_MS = 15 * 60 * 1000;
+const LEAD_MS = 60 * 60 * 1000;
+const slot = Math.floor(currentTime / SLOT_MS) * SLOT_MS;
+
+// Classes starting 45–60 min after this slot, so each one is announced once, ~1h ahead
+const nextEvent = events.find((e) => {
+  const untilStart = e.start - slot;
+  return untilStart > LEAD_MS - SLOT_MS && untilStart <= LEAD_MS;
+});
 if (nextEvent) {
   const embed = createEmbed(nextEvent);
   await notify(embed);
 } else {
-  console.log("No events found.");
+  console.log("No events starting in about an hour.");
 }
